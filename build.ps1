@@ -1,5 +1,5 @@
 param(
-    [string]$Version = "v1.0.0",
+    [string]$Version = "v1.1.0",
     [string]$Repo = "wadewu-ml/cursor-zh"
 )
 

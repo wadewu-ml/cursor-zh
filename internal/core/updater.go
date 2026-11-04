@@ -20,7 +20,7 @@ import (
 // Release metadata; override at build time, e.g.
 // -ldflags "-X cursor-zh/internal/core.AppVersion=v1.2.0 -X cursor-zh/internal/core.DefaultRepoPath=owner/repo"
 var (
-	AppVersion      = "v1.0.0"
+	AppVersion      = "v1.1.0"
 	DefaultRepoPath = "wadewu-ml/cursor-zh"
 )
 

@@ -4,7 +4,7 @@
   <p>适用于 Windows 的 Cursor 中文汉化工具，支持简体中文与繁體中文，补充 Agent 与专属设置界面的中文翻译。</p>
 
   <p>
-    <b>简体中文</b> | <a href="./README_en.md">English</a>
+    <b>简体中文</b> | <a href="./README_zh-TW.md">繁體中文</a> | <a href="./README_en.md">English</a>
   </p>
 </div>
 

@@ -4,7 +4,7 @@
   <p>Simplified and Traditional Chinese localization for Cursor on Windows, including the Agent interface and Cursor-specific settings.</p>
 
   <p>
-    <a href="./README.md">简体中文</a> | <b>English</b>
+    <a href="./README.md">简体中文</a> | <a href="./README_zh-TW.md">繁體中文</a> | <b>English</b>
   </p>
 </div>
 
