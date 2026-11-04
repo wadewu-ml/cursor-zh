@@ -1,0 +1,74 @@
+{
+  "description": "系统托盘右键菜单。主进程 out/main.js 中的唯一标签替换，注入脚本无法覆盖原生菜单。",
+  "updatedAt": "2026-10-13",
+  "replacements": [
+    [
+      "label:\"Recent Agents\"",
+      "label:\"最近智能体\""
+    ],
+    [
+      "label:\"No recent agents\"",
+      "label:\"暂无最近智能体\""
+    ],
+    [
+      "View More (${i.length})",
+      "查看更多（${i.length}）"
+    ],
+    [
+      "label:\"Clear All Notifications\"",
+      "label:\"清除所有通知\""
+    ],
+    [
+      "label:\"New Agent\"",
+      "label:\"新建智能体\""
+    ],
+    [
+      "label:\"Open Cursor\"",
+      "label:\"打开 Cursor\""
+    ],
+    [
+      "label:\"Settings\",click:()=>{this.trackEvent(\"tray.settings_opened\")",
+      "label:\"设置\",click:()=>{this.trackEvent(\"tray.settings_opened\")"
+    ],
+    [
+      "label:\"Quit\",click:()=>{iS.quit()}",
+      "label:\"退出\",click:()=>{iS.quit()}"
+    ],
+    [
+      "case\"in_progress\":return\"Running\"",
+      "case\"in_progress\":return\"运行中\""
+    ],
+    [
+      "case\"needs_attention\":return\"Needs attention\"",
+      "case\"needs_attention\":return\"需要关注\""
+    ],
+    [
+      "label:\"Log In\"",
+      "label:\"登录\""
+    ],
+    [
+      "label:\"Sign Up\"",
+      "label:\"注册\""
+    ],
+    [
+      "label:\"Quit\",click:()=>{zu.quit()}",
+      "label:\"退出\",click:()=>{zu.quit()}"
+    ],
+    [
+      "label:\"Cloud agents\"",
+      "label:\"云端智能体\""
+    ],
+    [
+      "case\"error\":return\"Needs attention\"",
+      "case\"error\":return\"需要关注\""
+    ],
+    [
+      "`Agent ${i+1}`",
+      "`智能体 ${i+1}`"
+    ],
+    [
+      "${e} more unread",
+      "${e} 条未读"
+    ]
+  ]
+}

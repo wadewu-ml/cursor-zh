@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>cursor-zh</title>
+  <link rel="icon" type="image/png" href="appicon.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="window-container">
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo-badge">
+          <img src="appicon.png" width="32" height="32" alt="cursor-zh 标识">
+        </div>
+        <div class="title-group">
+          <h1 class="app-title">cursor-zh</h1>
+          <span class="version-tag" id="appVersionBadge">v1.0.0</span>
+        </div>
+      </div>
+      <button class="icon-btn text-link" id="btnAbout">关于</button>
+    </header>
+
+    <!-- Cursor Info Card -->
+    <section class="card cursor-card">
+      <div class="card-header-line">
+        <div class="cursor-meta">
+          <span class="cursor-name" id="cursorName">Cursor</span>
+          <span class="cursor-version-badge" id="cursorVersion">检测中...</span>
+        </div>
+        <button class="btn-sm btn-ghost" id="btnChangePath">更改位置</button>
+      </div>
+      <div class="path-display" id="cursorPathDisplay" title="点击更改路径">正在检测 Cursor 安装路径...</div>
+    </section>
+
+    <!-- Status Card (Hero) -->
+    <section class="card hero-card" id="statusCard">
+      <div class="status-indicator-row">
+        <div class="status-pill" id="statusPill">
+          <span class="status-dot" id="statusDot"></span>
+          <span class="status-label" id="statusLabel">检测中...</span>
+        </div>
+      </div>
+      <p class="status-desc" id="statusDesc">正在检查当前 Cursor 汉化状态与文件校验...</p>
+
+      <!-- Progress view during active actions -->
+      <div class="progress-box hidden" id="progressBox">
+        <div class="progress-info">
+          <span class="progress-stage" id="progressStage">正在准备...</span>
+          <span class="spinner"></span>
+        </div>
+        <div class="progress-detail" id="progressDetail">请稍候...</div>
+      </div>
+
+      <!-- Primary Action Buttons -->
+      <div class="action-row" id="actionRow">
+        <button class="btn btn-primary" id="btnPrimaryAction">应用汉化</button>
+        <button class="btn btn-secondary hidden" id="btnSecondaryAction">打开 Cursor</button>
+        <button class="text-link-danger hidden" id="btnRestore">撤销汉化</button>
+      </div>
+    </section>
+
+    <!-- Update & Operation Info -->
+    <section class="update-bar" id="updateBar">
+      <div class="update-info">
+        <span class="update-icon">⚡</span>
+        <span class="update-text" id="updateText">检查新版本...</span>
+      </div>
+      <button class="btn-sm btn-outline hidden" id="btnUpdateAction">更新工具</button>
+    </section>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <button class="text-link" id="btnToggleLogs">查看运行日志 ▾</button>
+      <span class="footer-note">便携单文件版 · 词典与软件版本配套</span>
+    </footer>
+
+    <!-- Drawer for logs -->
+    <div class="log-drawer hidden" id="logDrawer">
+      <div class="log-drawer-header">
+        <span>操作与诊断日志</span>
+        <div class="log-actions">
+          <button class="btn-xs btn-ghost" id="btnCopyLogs">复制日志</button>
+          <button class="btn-xs btn-ghost" id="btnCloseLogs">关闭</button>
+        </div>
+      </div>
+      <pre class="log-content" id="logContent">暂无操作日志。</pre>
+    </div>
+  </div>
+
+  <!-- Modal: About -->
+  <div class="modal-backdrop hidden" id="aboutModal">
+    <div class="modal-box">
+      <h3>关于 cursor-zh</h3>
+      <p class="modal-desc">
+        面向 Windows 的 Cursor 中文本地化工具，提供界面翻译、系统托盘菜单汉化与状态检查。
+      </p>
+      <ul class="about-features">
+        <li>⚡ <b>一键自动修补</b>：集成 VS Code 官方语言包与 Glass Agent 动态占位符注入。</li>
+        <li>🔒 <b>输入安全保护</b>：严格保护用户输入与模型生成内容，避免错误改写。</li>
+        <li>🛡️ <b>完整校验与回滚</b>：重算 checksums，消除损坏提示，支持安全还原。</li>
+      </ul>
+      <p class="modal-note">本工具为社区维护的非官方本地化工具，与 Anysphere 官方无关。</p>
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="btnCloseAbout">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Confirm Restore -->
+  <div class="modal-backdrop hidden" id="restoreConfirmModal">
+    <div class="modal-box">
+      <h3>确认撤销汉化？</h3>
+      <p class="modal-desc">
+        撤销操作将从 <code>workbench.html</code> 中移除汉化脚本引用，还原系统托盘菜单，并重新校准文件校验值。
+      </p>
+      <p class="modal-sub">
+        已安装的 VS Code 语言包会保留。若希望彻底还原为纯英文菜单，请在 Cursor 启动后按 <code>Ctrl+Shift+P</code> 搜索 <code>Configure Display Language</code> 切换为 <code>English</code>。
+      </p>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="btnCancelRestore">取消</button>
+        <button class="btn btn-danger" id="btnConfirmRestore">确认撤销</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

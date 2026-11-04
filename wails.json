@@ -1,0 +1,21 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "cursor-zh",
+  "outputfilename": "cursor-zh",
+  "frontend:dir": "frontend",
+  "frontend:install": "",
+  "frontend:build": "",
+  "frontend:dev:watcher": "",
+  "frontend:dev:serverUrl": "",
+  "author": {
+    "name": "Wade",
+    "email": ""
+  },
+  "info": {
+    "companyName": "cursor-zh",
+    "productName": "cursor-zh",
+    "productVersion": "1.0.0",
+    "copyright": "Copyright © 2026",
+    "comments": "Cursor 界面与 Agent 中文本地化便携助手"
+  }
+}
