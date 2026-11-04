@@ -41,3 +41,7 @@ export function SelectCursorDir() {
 export function SetCursorDir(arg1) {
   return window['go']['main']['App']['SetCursorDir'](arg1);
 }
+
+export function SetLanguage(arg1) {
+  return window['go']['main']['App']['SetLanguage'](arg1);
+}

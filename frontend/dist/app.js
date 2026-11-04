@@ -5,6 +5,26 @@
   let currentStatus = null;
   let isOperating = false;
   let operationLogs = [];
+  let currentLanguage = 'zh-cn';
+  const traditional = window.cursorZhTraditional;
+  const traditionalPattern = new RegExp(Object.keys(traditional).sort((left, right) => right.length - left.length).join('|'), 'g');
+  const staticLabels = [];
+
+  function translate(text) {
+    return currentLanguage === 'zh-tw' ? text.replace(traditionalPattern, source => traditional[source]) : text;
+  }
+
+  function renderLanguage(locale) {
+    currentLanguage = locale;
+    for (const input of elLanguageSelect.querySelectorAll('input')) {
+      input.checked = input.value === locale;
+    }
+    elLanguageSelect.setAttribute('aria-label', translate('汉化语言'));
+    document.documentElement.lang = locale === 'zh-tw' ? 'zh-TW' : 'zh-CN';
+    for (const label of staticLabels) {
+      if (label.node.isConnected) label.node.textContent = translate(label.source);
+    }
+  }
 
   // DOM Elements
   const elAppVersionBadge = document.getElementById('appVersionBadge');
@@ -13,6 +33,7 @@
   const elCursorPathDisplay = document.getElementById('cursorPathDisplay');
   const elBtnChangePath = document.getElementById('btnChangePath');
   const elStatusPill = document.getElementById('statusPill');
+  const elStatusCard = document.getElementById('statusCard');
   const elStatusLabel = document.getElementById('statusLabel');
   const elStatusDesc = document.getElementById('statusDesc');
   const elProgressBox = document.getElementById('progressBox');
@@ -33,6 +54,7 @@
   const elRestoreConfirmModal = document.getElementById('restoreConfirmModal');
   const elBtnCancelRestore = document.getElementById('btnCancelRestore');
   const elBtnConfirmRestore = document.getElementById('btnConfirmRestore');
+  const elLanguageSelect = document.getElementById('languageSelect');
 
   function appendLog(line) {
     operationLogs.push(line);
@@ -42,10 +64,12 @@
 
   function setOperatingState(operating, stage, detail) {
     isOperating = operating;
+    elStatusCard.classList.toggle('is-operating', operating);
+    elLanguageSelect.disabled = operating;
     if (operating) {
       elProgressBox.classList.remove('hidden');
-      elProgressStage.textContent = stage || '正在处理...';
-      elProgressDetail.textContent = detail || '请稍候...';
+      elProgressStage.textContent = translate(stage || '正在处理...');
+      elProgressDetail.textContent = translate(detail || '请稍候...');
       elBtnPrimaryAction.disabled = true;
       elBtnSecondaryAction.disabled = true;
       elBtnRestore.disabled = true;
@@ -75,15 +99,17 @@
 
   function renderStatus(s) {
     if (!s) return;
+    if (s.locale) renderLanguage(s.locale);
 
     // Path & version info
     if (s.installDir) {
       elCursorPathDisplay.textContent = s.installDir;
       elCursorPathDisplay.title = s.installDir;
     } else {
-      elCursorPathDisplay.textContent = '未检测到 Cursor 安装目录';
+      elCursorPathDisplay.textContent = translate('未检测到 Cursor 安装目录');
+      elCursorPathDisplay.title = translate('点击更改路径');
     }
-    elCursorVersion.textContent = s.cursorVersion ? 'v' + s.cursorVersion : '未知版本';
+    elCursorVersion.textContent = s.cursorVersion ? 'v' + s.cursorVersion : translate('未知版本');
 
     // Pill style & label
     elStatusPill.className = 'status-pill';
@@ -141,6 +167,9 @@
         elBtnRestore.classList.remove('hidden');
         break;
     }
+    for (const element of [elStatusLabel, elStatusDesc, elBtnPrimaryAction, elBtnSecondaryAction]) {
+      element.textContent = translate(element.textContent);
+    }
   }
 
   async function handlePrimaryAction() {
@@ -159,7 +188,7 @@
       try {
         await window.go.main.App.LaunchCursor();
       } catch (e) {
-        alert('启动 Cursor 失败: ' + (e.message || e));
+        alert(translate('启动 Cursor 失败: ') + (e.message || e));
       }
       return;
     }
@@ -181,11 +210,11 @@
       } else {
         const msg = res && res.error ? res.error : '未知错误';
         appendLog('[错误] ' + msg);
-        alert('应用汉化失败: ' + msg);
+        alert(translate('应用汉化失败: ') + msg);
       }
     } catch (err) {
       appendLog('[异常] ' + (err.message || err));
-      alert('应用汉化失败: ' + (err.message || err));
+      alert(translate('应用汉化失败: ') + (err.message || err));
     } finally {
       setOperatingState(false);
       await refreshStatus();
@@ -206,11 +235,11 @@
       } else {
         const msg = res && res.error ? res.error : '未知错误';
         appendLog('[错误] ' + msg);
-        alert('撤销汉化失败: ' + msg);
+        alert(translate('撤销汉化失败: ') + msg);
       }
     } catch (err) {
       appendLog('[异常] ' + (err.message || err));
-      alert('撤销汉化失败: ' + (err.message || err));
+      alert(translate('撤销汉化失败: ') + (err.message || err));
     } finally {
       setOperatingState(false);
       await refreshStatus();
@@ -238,9 +267,9 @@
   }
 
   function showUpdateError(msg) {
-    elUpdateText.textContent = '检查更新失败: ' + msg;
+    elUpdateText.textContent = translate('检查更新失败: ') + msg;
     elUpdateText.title = msg;
-    elBtnUpdateAction.textContent = '重试';
+    elBtnUpdateAction.textContent = translate('重试');
     elBtnUpdateAction.classList.remove('hidden');
     elBtnUpdateAction.onclick = checkAppUpdate;
   }
@@ -249,7 +278,7 @@
     elBtnUpdateAction.classList.add('hidden');
     elUpdateText.title = '';
     try {
-      elUpdateText.textContent = '检查新版本...';
+      elUpdateText.textContent = translate('检查新版本...');
       const info = await window.go.main.App.CheckAppUpdate();
       if (!info) {
         showUpdateError('未返回更新信息');
@@ -260,18 +289,18 @@
         return;
       }
       if (!info.configured) {
-        elUpdateText.textContent = '未配置更新源（本地构建版本）';
+        elUpdateText.textContent = translate('未配置更新源（本地构建版本）');
         return;
       }
       if (info.available) {
-        elUpdateText.textContent = `发现新版本 ${info.latestVersion}（当前 ${info.currentVersion}）`;
+        elUpdateText.textContent = translate('发现新版本 ') + `${info.latestVersion}（` + translate('当前 ') + `${info.currentVersion}）`;
         elUpdateText.title = info.releaseNotes || '';
-        elBtnUpdateAction.textContent = '更新并重启';
+        elBtnUpdateAction.textContent = translate('更新并重启');
         elBtnUpdateAction.classList.remove('hidden');
         elBtnUpdateAction.onclick = doAppUpdate;
         return;
       }
-      elUpdateText.textContent = `已是最新版本 ${info.currentVersion}`;
+      elUpdateText.textContent = translate('已是最新版本 ') + info.currentVersion;
     } catch (e) {
       showUpdateError(e && e.message ? e.message : String(e));
     }
@@ -302,6 +331,21 @@
   }
 
   // Bind Listeners
+  elLanguageSelect.addEventListener('change', async event => {
+    const previous = currentLanguage;
+    elLanguageSelect.disabled = true;
+    try {
+      const status = await window.go.main.App.SetLanguage(event.target.value);
+      currentStatus = status;
+      renderStatus(status);
+      await checkAppUpdate();
+    } catch (error) {
+      renderLanguage(previous);
+      alert(error.message || String(error));
+    } finally {
+      elLanguageSelect.disabled = false;
+    }
+  });
   elBtnPrimaryAction.addEventListener('click', handlePrimaryAction);
   elBtnSecondaryAction.addEventListener('click', doApply); // re-apply
   elBtnRestore.addEventListener('click', () => {
@@ -328,7 +372,7 @@
   });
   elBtnCopyLogs.addEventListener('click', () => {
     navigator.clipboard.writeText(operationLogs.join('\n'))
-      .then(() => alert('日志已复制到剪贴板'))
+      .then(() => alert(translate('日志已复制到剪贴板')))
       .catch(() => {});
   });
 
@@ -337,8 +381,8 @@
     if (window.runtime && window.runtime.EventsOn) {
       window.runtime.EventsOn('progress', (data) => {
         if (data && isOperating) {
-          if (data.stage) elProgressStage.textContent = data.stage;
-          if (data.detail) elProgressDetail.textContent = data.detail;
+          if (data.stage) elProgressStage.textContent = translate(data.stage);
+          if (data.detail) elProgressDetail.textContent = translate(data.detail);
           appendLog(`[进度] ${data.stage}: ${data.detail}`);
         }
       });
@@ -347,6 +391,13 @@
 
   // Initialization
   window.addEventListener('DOMContentLoaded', async () => {
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    while (walker.nextNode()) {
+      const node = walker.currentNode;
+      if (/[\u3400-\u9fff]/.test(node.textContent) && !node.parentElement.closest('#languageSelect, script, #logContent, #cursorPathDisplay')) {
+        staticLabels.push({ node, source: node.textContent });
+      }
+    }
     setupWailsEvents();
     // Wait briefly for Wails IPC initialization
     setTimeout(async () => {

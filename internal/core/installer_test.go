@@ -35,18 +35,25 @@ func stubEnvironment(t *testing.T, userDataDir string, cliErr error) {
 		if cliErr != nil {
 			return []byte("boom"), cliErr
 		}
-		packDir := filepath.Join(extDir, LanguagePackExtensionID+"-1.0.0")
+		profile := languageFor(readConfiguredLocale(installDir))
+		packDir := filepath.Join(extDir, profile.extensionID+"-1.0.0")
 		if err := os.MkdirAll(filepath.Join(packDir, "translations"), 0755); err != nil {
 			return nil, err
 		}
 		if err := os.WriteFile(filepath.Join(packDir, "package.json"), []byte(`{}`), 0644); err != nil {
 			return nil, err
 		}
-		lp := map[string]any{"zh-cn": map[string]any{
+		lp := make(map[string]any)
+		if previous, err := os.ReadFile(filepath.Join(userDataDir, "languagepacks.json")); err == nil {
+			if err := json.Unmarshal(previous, &lp); err != nil {
+				return nil, err
+			}
+		}
+		lp[profile.locale] = map[string]any{
 			"hash":         "test-pack",
-			"extensions":   []any{map[string]any{"extensionIdentifier": map[string]any{"id": LanguagePackExtensionID}}},
-			"translations": map[string]any{"vscode": filepath.Join(userDataDir, "clp", "zh-cn", "main.i18n.json")},
-		}}
+			"extensions":   []any{map[string]any{"extensionIdentifier": map[string]any{"id": profile.extensionID}}},
+			"translations": map[string]any{"vscode": filepath.Join(userDataDir, "clp", profile.locale, "main.i18n.json")},
+		}
 		data, _ := json.Marshal(lp)
 		if err := os.MkdirAll(userDataDir, 0755); err != nil {
 			return nil, err

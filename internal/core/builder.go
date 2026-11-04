@@ -58,6 +58,7 @@ func ParseBuildMarker(content string) (hash string, body string, ok bool) {
 
 func (b *Builder) buildBody() (string, error) {
 	var parts []string
+	parts = append(parts, fmt.Sprintf("    var localizationLocale = %q;", resourceLanguage(b.fsys).locale))
 
 	// 1. bootstrap.js
 	bootstrapRaw, err := b.readFS("localization/runtime/bootstrap.js")

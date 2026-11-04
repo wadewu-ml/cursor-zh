@@ -1,7 +1,7 @@
 <div align="center">
   <img src="./build/appicon.png" width="108" height="108" alt="cursor-zh icon" />
   <h1>cursor-zh</h1>
-  <p>适用于 Windows 的 Cursor 简体中文汉化工具，补充 Agent 与专属设置界面的中文翻译。</p>
+  <p>适用于 Windows 的 Cursor 中文汉化工具，支持简体中文与繁體中文，补充 Agent 与专属设置界面的中文翻译。</p>
 
   <p>
     <b>简体中文</b> | <a href="./README_en.md">English</a>
@@ -10,7 +10,7 @@
 
 ---
 
-VS Code 官方中文语言包并不覆盖 Cursor 的全部界面，Agent 窗口、Composer 对话区和专属设置中仍有不少英文。`cursor-zh` 在官方语言包的基础上，为这些界面补充简体中文翻译。
+VS Code 官方中文语言包并不覆盖 Cursor 的全部界面，Agent 窗口、Composer 对话区和专属设置中仍有不少英文。`cursor-zh` 在官方语言包的基础上，为这些界面补充中文翻译。
 
 工具内置中文语言包和翻译词典，下载后直接运行 `cursor-zh.exe` 即可，无需安装 Node.js 或 Python。你可以在图形界面中应用或撤销汉化，程序会自动更新相关文件的校验值，避免出现「安装似乎损坏」提示。
 
@@ -26,7 +26,7 @@ VS Code 官方中文语言包并不覆盖 Cursor 的全部界面，Agent 窗口�
 
 1. 完全退出 Cursor，运行 `cursor-zh.exe`。
 2. 确认检测到的安装路径。如未自动识别，点击「更改位置」，选择 `Cursor.exe` 所在目录。
-3. 点击「应用汉化」，完成后启动 Cursor。
+3. 选择「简体中文」或「繁體中文」，点击「应用汉化」，完成后启动 Cursor。切换语言时，退出 Cursor 后重新应用即可。
 
 ## 常见问题
 
@@ -70,6 +70,8 @@ localStorage.setItem('cursor-zh.marketplace.online', '0');
 # 运行测试
 go test ./...
 ```
+
+繁体翻译资源由现有词典和界面文字离线生成。修改相关文字后，安装开发依赖 `opencc-python-reimplemented==0.1.7`，运行 `python localization/tools/generate_traditional.py`，然后重新构建。用户无需安装转换工具。
 
 ## 免责声明
 

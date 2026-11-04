@@ -33,18 +33,20 @@ type App struct {
 // NewApp creates a new App application struct.
 func NewApp(fsys fs.FS) *App {
 	det := core.NewDetector()
+	initialInstall := det.ResolveInstallDir("")
+	initialUser := det.ResolveUserDataDir(initialInstall, "")
+	locale := core.DetectLocale(initialInstall)
+	resources := core.LocalizedResources(fsys, locale)
+	det.Locale = locale
 	// The detector compares the installed script against the build embedded in this binary.
-	if js, err := core.NewBuilder(fsys).BuildJavaScript(); err == nil {
+	if js, err := core.NewBuilder(resources).BuildJavaScript(); err == nil {
 		if hash, _, ok := core.ParseBuildMarker(js); ok {
 			det.ExpectedBuildHash = hash
 		}
 	}
-	inst := core.NewInstaller(fsys)
+	inst := core.NewInstaller(resources)
 	rest := core.NewRestorer(fsys)
 	upd := core.NewUpdater("")
-
-	initialInstall := det.ResolveInstallDir("")
-	initialUser := det.ResolveUserDataDir(initialInstall, "")
 
 	return &App{
 		fsys:        fsys,
@@ -72,17 +74,28 @@ func (a *App) appendLog(msg string) {
 	a.logs = append(a.logs, msg)
 }
 
+func (a *App) localize(text string) string {
+	a.mu.Lock()
+	locale := a.detector.Locale
+	a.mu.Unlock()
+	if locale == core.TraditionalChinese {
+		return core.TraditionalText(text)
+	}
+	return text
+}
+
 // GetStatus returns current Cursor inspection status.
 func (a *App) GetStatus() *core.CursorStatus {
 	a.mu.Lock()
 	dir := a.installDir
 	user := a.userDataDir
+	detector := a.detector
 	a.mu.Unlock()
 
 	if dir == "" {
 		user = ""
 	}
-	status, err := a.detector.Inspect(dir, user)
+	status, err := detector.Inspect(dir, user)
 	if err != nil {
 		return &core.CursorStatus{
 			State:   core.StateNotFound,
@@ -101,13 +114,33 @@ func (a *App) GetStatus() *core.CursorStatus {
 	return status
 }
 
+func (a *App) SetLanguage(locale string) (*core.CursorStatus, error) {
+	if locale != core.SimplifiedChinese && locale != core.TraditionalChinese {
+		return nil, errors.New("不支持的界面语言")
+	}
+	resources := core.LocalizedResources(a.fsys, locale)
+	script, err := core.NewBuilder(resources).BuildJavaScript()
+	if err != nil {
+		return nil, err
+	}
+	hash, _, _ := core.ParseBuildMarker(script)
+	detector := core.NewDetector()
+	detector.Locale = locale
+	detector.ExpectedBuildHash = hash
+	a.mu.Lock()
+	a.detector = detector
+	a.installer = core.NewInstaller(resources)
+	a.mu.Unlock()
+	return a.GetStatus(), nil
+}
+
 // SelectCursorDir displays a native folder picker dialog.
 func (a *App) SelectCursorDir() (string, error) {
 	if a.ctx == nil {
 		return "", errors.New("app context not initialized")
 	}
 	selected, err := wailsRuntime.OpenDirectoryDialog(a.ctx, wailsRuntime.OpenDialogOptions{
-		Title: "选择 Cursor 安装目录（包含 Cursor.exe）",
+		Title: a.localize("选择 Cursor 安装目录（包含 Cursor.exe）"),
 	})
 	if err != nil {
 		return "", err
@@ -133,9 +166,11 @@ func (a *App) ApplyLocalization() *core.ActionResult {
 	a.mu.Lock()
 	dir := a.installDir
 	user := a.userDataDir
+	installer := a.installer
 	a.mu.Unlock()
 
 	progressCb := func(stage, detail string) {
+		stage, detail = a.localize(stage), a.localize(detail)
 		if a.ctx != nil {
 			wailsRuntime.EventsEmit(a.ctx, "progress", map[string]string{
 				"stage":  stage,
@@ -145,7 +180,7 @@ func (a *App) ApplyLocalization() *core.ActionResult {
 		a.appendLog(fmt.Sprintf("[%s] %s", stage, detail))
 	}
 
-	res, err := a.installer.Apply(dir, user, progressCb)
+	res, err := installer.Apply(dir, user, progressCb)
 	if err != nil {
 		a.appendLog(fmt.Sprintf("[错误] 应用汉化失败: %v", err))
 		return &core.ActionResult{
@@ -155,6 +190,7 @@ func (a *App) ApplyLocalization() *core.ActionResult {
 			Logs:    a.GetLogs(),
 		}
 	}
+	res.Message = a.localize(res.Message)
 	return res
 }
 
@@ -166,6 +202,7 @@ func (a *App) RestoreLocalization() *core.ActionResult {
 	a.mu.Unlock()
 
 	progressCb := func(stage, detail string) {
+		stage, detail = a.localize(stage), a.localize(detail)
 		if a.ctx != nil {
 			wailsRuntime.EventsEmit(a.ctx, "progress", map[string]string{
 				"stage":  stage,
@@ -185,6 +222,7 @@ func (a *App) RestoreLocalization() *core.ActionResult {
 			Logs:    a.GetLogs(),
 		}
 	}
+	res.Message = a.localize(res.Message)
 	return res
 }
 

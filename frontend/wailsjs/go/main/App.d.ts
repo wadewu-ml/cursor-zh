@@ -21,3 +21,5 @@ export function RestoreLocalization():Promise<core.ActionResult>;
 export function SelectCursorDir():Promise<string>;
 
 export function SetCursorDir(arg1:string):Promise<core.CursorStatus>;
+
+export function SetLanguage(arg1:string):Promise<core.CursorStatus>;

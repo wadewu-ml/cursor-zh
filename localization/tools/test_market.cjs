@@ -18,12 +18,13 @@ function load(context, start, end) {
     vm.runInContext(engine.slice(from, to), context);
 }
 
-function fixture(storageValues = {}) {
+function fixture(storageValues = {}, locale = 'zh-cn') {
     let walked = 0;
     let candidates = [];
     const frames = [];
     const storage = new Map(Object.entries(storageValues));
     const context = vm.createContext({
+        localizationLocale: locale,
         Node: { ELEMENT_NODE: 1, TEXT_NODE: 3 }, NodeFilter: { SHOW_TEXT: 4 },
         localStorage: { getItem: key => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value) },
         lookupTranslation: s => dictionary.get(s), replacePartialText: () => null,
@@ -85,6 +86,20 @@ async function main() {
     f.context.translateMarketplaceOnline(cachedNode, cachedText);
     assert.equal(cachedNode.textContent, '已缓存的市场描述');
     assert.equal(cachedNode.__cursorZhMarketplaceOriginal, cachedText);
+    const traditional = fixture({}, 'zh-tw');
+    traditional.storage.set('cursor-zh.marketplace.cache.' + cachedText, '简体缓存');
+    const traditionalNode = traditional.text(cachedText);
+    let translationURL;
+    traditional.context.fetch = async url => {
+        translationURL = url;
+        return { json: async () => [[['繁體快取']]] };
+    };
+    traditional.context.translateMarketplaceOnline(traditionalNode, cachedText);
+    await new Promise(setImmediate);
+    assert.ok(translationURL.includes('tl=zh-TW'));
+    assert.equal(traditionalNode.textContent, '繁體快取');
+    assert.equal(traditional.storage.get('cursor-zh.marketplace.cache.zh-tw.' + cachedText), '繁體快取');
+    assert.equal(traditional.storage.get('cursor-zh.marketplace.cache.' + cachedText), '简体缓存');
     // Neither unrelated labels nor long chat histories should be scanned or rewritten.
     const background = Array.from({ length: 5000 }, () => f.text('Datadog', '', null));
     f.context.localizeMarketplace();

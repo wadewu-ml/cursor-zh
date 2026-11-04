@@ -1,7 +1,7 @@
 <div align="center">
   <img src="./build/appicon.png" width="108" height="108" alt="cursor-zh icon" />
   <h1>cursor-zh</h1>
-  <p>Simplified Chinese localization for Cursor on Windows, including the Agent interface and Cursor-specific settings.</p>
+  <p>Simplified and Traditional Chinese localization for Cursor on Windows, including the Agent interface and Cursor-specific settings.</p>
 
   <p>
     <a href="./README.md">简体中文</a> | <b>English</b>
@@ -10,7 +10,7 @@
 
 ---
 
-The official VS Code Chinese language pack does not cover all of Cursor's interface. The Agent window, Composer, and Cursor-specific settings still contain English text. `cursor-zh` builds on the official language pack to add Simplified Chinese translations for these areas.
+The official VS Code Chinese language pack does not cover all of Cursor's interface. The Agent window, Composer, and Cursor-specific settings still contain English text. `cursor-zh` builds on the official language packs to add Chinese translations for these areas.
 
 The language pack and translation dictionaries are bundled in a single portable `.exe`, so you can run the tool without installing Node.js or Python. Use the desktop interface to apply or undo localization. The tool also updates file checksums to prevent the "Your Cursor installation appears to be corrupt" warning after changes.
 
@@ -26,7 +26,7 @@ The language pack and translation dictionaries are bundled in a single portable 
 
 1. Close Cursor completely and open `cursor-zh.exe`.
 2. Check the detected installation path. If it was not found automatically, click **Change Location** (`更改位置`) and select the folder containing `Cursor.exe`.
-3. Click **Apply Localization** (`应用汉化`), wait for completion, then start Cursor.
+3. Select **Simplified Chinese** (`简体中文`) or **Traditional Chinese** (`繁體中文`), then click **Apply Localization** (`应用汉化`). Wait for completion and start Cursor. To switch languages, close Cursor and apply localization again.
 
 ## FAQ
 
@@ -70,6 +70,8 @@ Building requires Windows and Go 1.26.10 or later. Running the app requires the 
 # Run Go tests
 go test ./...
 ```
+
+Traditional Chinese resources are generated offline from the existing dictionaries and interface text. After editing them, install the development dependency `opencc-python-reimplemented==0.1.7`, run `python localization/tools/generate_traditional.py`, and rebuild. Users do not need to install the conversion tool.
 
 ## Disclaimer
 

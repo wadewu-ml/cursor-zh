@@ -30,9 +30,21 @@
           <span class="cursor-name" id="cursorName">Cursor</span>
           <span class="cursor-version-badge" id="cursorVersion">检测中...</span>
         </div>
-        <button class="btn-sm btn-ghost" id="btnChangePath">更改位置</button>
+        <fieldset class="language-switch" id="languageSelect" aria-label="汉化语言">
+          <label>
+            <input type="radio" name="language" value="zh-cn" checked>
+            <span>简体中文</span>
+          </label>
+          <label>
+            <input type="radio" name="language" value="zh-tw">
+            <span>繁體中文</span>
+          </label>
+        </fieldset>
       </div>
-      <div class="path-display" id="cursorPathDisplay" title="点击更改路径">正在检测 Cursor 安装路径...</div>
+      <div class="path-row">
+        <div class="path-display" id="cursorPathDisplay" title="点击更改路径">正在检测 Cursor 安装路径...</div>
+        <button class="text-link" id="btnChangePath">更改位置</button>
+      </div>
     </section>
 
     <!-- Status Card (Hero) -->
@@ -62,19 +74,15 @@
       </div>
     </section>
 
-    <!-- Update & Operation Info -->
-    <section class="update-bar" id="updateBar">
-      <div class="update-info">
-        <span class="update-icon">⚡</span>
-        <span class="update-text" id="updateText">检查新版本...</span>
-      </div>
-      <button class="btn-sm btn-outline hidden" id="btnUpdateAction">更新工具</button>
-    </section>
-
     <!-- Footer -->
     <footer class="app-footer">
+      <div class="update-bar" id="updateBar">
+        <div class="update-info">
+          <span class="update-text" id="updateText">检查新版本...</span>
+        </div>
+        <button class="text-link hidden" id="btnUpdateAction">更新工具</button>
+      </div>
       <button class="text-link" id="btnToggleLogs">查看运行日志 ▾</button>
-      <span class="footer-note">便携单文件版 · 词典与软件版本配套</span>
     </footer>
 
     <!-- Drawer for logs -->
@@ -126,6 +134,7 @@
     </div>
   </div>
 
+  <script src="traditional.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

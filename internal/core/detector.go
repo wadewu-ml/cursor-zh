@@ -24,6 +24,7 @@ type Detector struct {
 	// ExpectedBuildHash is the build marker hash of the localization embedded in this binary.
 	// When set, an installed script with a different hash is reported as outdated.
 	ExpectedBuildHash string
+	Locale            string
 }
 
 // cursorRunningCheck is replaceable in tests.
@@ -139,7 +140,8 @@ func (d *Detector) ResolveExtensionsDir(installDir string) string {
 // HasLanguagePack reports whether the zh-cn locale is selected and the official
 // language pack is actually present (registered in languagepacks.json or installed).
 func (d *Detector) HasLanguagePack(installDir, userDataDir string) bool {
-	if !strings.EqualFold(readConfiguredLocale(installDir), "zh-cn") {
+	profile := languageFor(d.Locale)
+	if !strings.EqualFold(readConfiguredLocale(installDir), profile.locale) {
 		return false
 	}
 	if lpData, err := os.ReadFile(filepath.Join(userDataDir, "languagepacks.json")); err == nil {
@@ -151,8 +153,8 @@ func (d *Detector) HasLanguagePack(installDir, userDataDir string) bool {
 			} `json:"extensions"`
 		}
 		if json.Unmarshal(lpData, &lp) == nil {
-			for _, ext := range lp["zh-cn"].Extensions {
-				if strings.EqualFold(ext.ExtensionIdentifier.ID, LanguagePackExtensionID) {
+			for _, ext := range lp[profile.locale].Extensions {
+				if strings.EqualFold(ext.ExtensionIdentifier.ID, profile.extensionID) {
 					return true
 				}
 			}
@@ -167,7 +169,7 @@ func (d *Detector) languagePackInstalled(installDir string) bool {
 	if err != nil {
 		return false
 	}
-	prefix := LanguagePackExtensionID + "-"
+	prefix := languageFor(d.Locale).extensionID + "-"
 	for _, e := range entries {
 		if !e.IsDir() || !strings.HasPrefix(strings.ToLower(e.Name()), prefix) {
 			continue
@@ -206,7 +208,9 @@ func (d *Detector) Inspect(installDir, userDataDir string) (*CursorStatus, error
 	status := &CursorStatus{
 		InstallDir:  resolvedInstall,
 		UserDataDir: resolvedUser,
+		Locale:      languageFor(d.Locale).locale,
 	}
+	defer func() { status.Message = languageText(d.Locale, status.Message) }()
 
 	if resolvedInstall == "" || !d.IsValidInstallDir(resolvedInstall) {
 		status.State = StateNotFound
@@ -249,7 +253,8 @@ func (d *Detector) Inspect(installDir, userDataDir string) (*CursorStatus, error
 	// Check main.js tray patch
 	mainJsPath := filepath.Join(resolvedInstall, "resources", "app", "out", "main.js")
 	if mainData, err := os.ReadFile(mainJsPath); err == nil {
-		status.HasTrayPatch = bytes.Contains(mainData, []byte("最近智能体")) || bytes.Contains(mainData, []byte("清除所有通知"))
+		status.HasTrayPatch = bytes.Contains(mainData, []byte("最近智能体")) || bytes.Contains(mainData, []byte("清除所有通知")) ||
+			bytes.Contains(mainData, []byte(TraditionalText("最近智能体"))) || bytes.Contains(mainData, []byte(TraditionalText("清除所有通知")))
 	}
 
 	// Check if cursor-zh-runtime.js exists
@@ -308,7 +313,7 @@ func (d *Detector) Inspect(installDir, userDataDir string) (*CursorStatus, error
 	case d.ExpectedBuildHash != "" && status.LocalizationBuild != d.ExpectedBuildHash:
 		status.Message = "已安装的汉化与当前助手内置词典版本不一致，建议更新汉化。"
 	case !status.HasLanguagePack:
-		status.Message = "未检测到已生效的官方简体中文语言包，建议重新应用。"
+		status.Message = "未检测到已生效的官方" + languageFor(d.Locale).name + "语言包，建议重新应用。"
 	default:
 		status.State = StatePatchedCurrent
 		status.Message = "已成功应用中文汉化，所有核心校验与脚本均正常。"

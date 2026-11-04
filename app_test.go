@@ -33,3 +33,22 @@ func TestSetCursorDirRefreshesPortableUserData(t *testing.T) {
 		t.Fatalf("displayed/action paths differ: status=%s action=%s", status.UserDataDir, app.userDataDir)
 	}
 }
+
+func TestSetLanguageDoesNotApplyBeforeConfirmation(t *testing.T) {
+	app := NewApp(localizationFS)
+	app.installDir = t.TempDir()
+	for _, locale := range []string{core.TraditionalChinese, core.SimplifiedChinese} {
+		status, err := app.SetLanguage(locale)
+		if err != nil || status.Locale != locale || app.detector.ExpectedBuildHash == "" {
+			t.Fatalf("select %s: %+v %v", locale, status, err)
+		}
+		entries, err := os.ReadDir(app.installDir)
+		if err != nil || len(entries) != 0 {
+			t.Fatal("selecting a language changed the installation directory")
+		}
+	}
+	before := app.detector
+	if _, err := app.SetLanguage("unsupported"); err == nil || app.detector != before {
+		t.Fatal("unsupported language changed the selected locale")
+	}
+}

@@ -10,6 +10,11 @@ const notifications = JSON.parse(fs.readFileSync(path.join(root, 'Ad_Popup_Dicti
 const expected = new Map(core.sections.flatMap(section => section.entries).concat(core.entries || []));
 for (const [key, value] of Array.isArray(notifications.entries)
     ? notifications.entries : Object.entries(notifications.entries)) expected.set(key, value);
+if (process.argv[3] === 'zh-tw') {
+    const translations = JSON.parse(fs.readFileSync(path.join(root, '../internal/core/traditional.json'), 'utf8'));
+    const pattern = new RegExp(Object.keys(translations).sort((left, right) => right.length - left.length).join('|'), 'g');
+    for (const [key, value] of expected) expected.set(key, value.replace(pattern, source => translations[source]));
+}
 
 const events = new Map();
 const timers = [];

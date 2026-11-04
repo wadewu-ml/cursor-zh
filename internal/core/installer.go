@@ -103,7 +103,8 @@ func (in *Installer) Apply(installDir, userDataDir string, progress ProgressFunc
 	}
 
 	// 2. Language pack & locale configuration (required)
-	progress("步骤 2/4: 准备简体中文语言包", "正在配置显示语言与语言包...")
+	profile := resourceLanguage(in.fsys)
+	progress("步骤 2/4: 准备"+profile.name+"语言包", "正在配置显示语言与语言包...")
 	log("配置 argv.json 显示语言...")
 	if err := in.setupLocale(installDir); err != nil {
 		return nil, txn.failWithRollback("配置 argv.json 失败", err)
@@ -111,7 +112,7 @@ func (in *Installer) Apply(installDir, userDataDir string, progress ProgressFunc
 
 	log("安装内置官方中文语言包...")
 	if err := in.installLanguagePack(installDir, userDataDir, log); err != nil {
-		return nil, txn.failWithRollback("安装官方简体中文语言包失败", err)
+		return nil, txn.failWithRollback("安装官方"+profile.name+"语言包失败", err)
 	}
 
 	log("更新 Cursor 私有扩展翻译桥接...")
@@ -152,7 +153,8 @@ func (in *Installer) Apply(installDir, userDataDir string, progress ProgressFunc
 }
 
 func (in *Installer) installLanguagePack(installDir, userDataDir string, log func(string)) error {
-	vsixData, err := fs.ReadFile(in.fsys, "VSCode-language-pack-zh-hans.vsix")
+	profile := resourceLanguage(in.fsys)
+	vsixData, err := fs.ReadFile(in.fsys, profile.vsix)
 	if err != nil {
 		return fmt.Errorf("读取嵌入 VSIX 失败: %w", err)
 	}
@@ -175,10 +177,12 @@ func (in *Installer) installLanguagePack(installDir, userDataDir string, log fun
 		log(fmt.Sprintf("安装扩展命令输出: %s", strings.TrimSpace(string(out))))
 		return err
 	}
-	if !NewDetector().languagePackInstalled(installDir) {
-		return errors.New("安装命令已返回，但未在扩展目录找到简体中文语言包")
+	detector := NewDetector()
+	detector.Locale = profile.locale
+	if !detector.languagePackInstalled(installDir) {
+		return fmt.Errorf("安装命令已返回，但未在扩展目录找到%s语言包", profile.name)
 	}
-	log("官方简体中文扩展已成功安装")
+	log("官方" + profile.name + "扩展已成功安装")
 	return nil
 }
 
@@ -207,9 +211,10 @@ func (in *Installer) setupPrivateExtensions(userDataDir string, txn *fileTxn, lo
 	if err := json.Unmarshal(data, &raw); err != nil {
 		return fmt.Errorf("解析 languagepacks.json 失败: %w", err)
 	}
-	zhRaw, ok := raw["zh-cn"].(map[string]any)
+	profile := resourceLanguage(in.fsys)
+	zhRaw, ok := raw[profile.locale].(map[string]any)
 	if !ok {
-		return errors.New("languagepacks.json 未登记 zh-cn 语言包")
+		return fmt.Errorf("languagepacks.json 未登记 %s 语言包", profile.locale)
 	}
 	transRaw, ok := zhRaw["translations"].(map[string]any)
 	if !ok {
@@ -237,6 +242,9 @@ func (in *Installer) setupPrivateExtensions(userDataDir string, txn *fileTxn, lo
 		if err != nil {
 			return err
 		}
+		if profile.locale == TraditionalChinese {
+			wrappedBytes = []byte(TraditionalText(string(wrappedBytes)))
+		}
 		if err := txn.track(targetPath); err != nil {
 			return err
 		}
@@ -256,7 +264,7 @@ func (in *Installer) setupPrivateExtensions(userDataDir string, txn *fileTxn, lo
 	// Cursor reuses tcf.json when the language-pack hash and commit are unchanged.
 	// Refresh that file in place; keep the compiled messages and unrelated caches.
 	if hash, _ := zhRaw["hash"].(string); hash != "" {
-		cacheDir := filepath.Join(userDataDir, "clp", hash+".zh-cn")
+		cacheDir := filepath.Join(userDataDir, "clp", hash+"."+profile.locale)
 		if _, err := os.Stat(cacheDir); err == nil {
 			cachePath := filepath.Join(cacheDir, "tcf.json")
 			if err := txn.track(cachePath); err != nil {
@@ -300,7 +308,7 @@ func (in *Installer) injectHTML(htmlPath string) error {
 }
 
 func (in *Installer) patchTray(mainJsPath string, reverse bool) error {
-	trayData, err := fs.ReadFile(in.fsys, "localization/Tray_Dictionary.json")
+	trayData, err := fs.ReadFile(baseResources(in.fsys), "localization/Tray_Dictionary.json")
 	if err != nil {
 		return fmt.Errorf("读取托盘词典失败: %w", err)
 	}
@@ -316,23 +324,22 @@ func (in *Installer) patchTray(mainJsPath string, reverse bool) error {
 		return err
 	}
 	content := string(contentBytes)
-	changed := false
 
 	for _, pair := range raw.Replacements {
 		if len(pair) < 2 {
 			continue
 		}
-		from, to := pair[0], pair[1]
-		if reverse {
-			from, to = pair[1], pair[0]
-		}
-		if strings.Contains(content, from) {
-			content = strings.ReplaceAll(content, from, to)
-			changed = true
+		content = strings.ReplaceAll(content, TraditionalText(pair[1]), pair[0])
+		content = strings.ReplaceAll(content, pair[1], pair[0])
+	}
+	if !reverse {
+		for _, pair := range raw.Replacements {
+			if len(pair) >= 2 {
+				content = strings.ReplaceAll(content, pair[0], languageText(resourceLanguage(in.fsys).locale, pair[1]))
+			}
 		}
 	}
-
-	if changed {
+	if content != string(contentBytes) {
 		return atomicWriteFile(mainJsPath, []byte(content), 0644)
 	}
 	return nil

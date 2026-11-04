@@ -7,5 +7,5 @@ import (
 //go:embed all:frontend/dist
 var assetsFS embed.FS
 
-//go:embed localization/*.json localization/runtime/*.js VSCode-language-pack-zh-hans.vsix
+//go:embed localization/*.json localization/runtime/*.js VSCode-language-pack-zh-hans.vsix VSCode-language-pack-zh-hant.vsix
 var localizationFS embed.FS

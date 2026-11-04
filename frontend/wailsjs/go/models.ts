@@ -19,6 +19,7 @@ export namespace core {
 	    }
 	}
 	export class CursorStatus {
+	    locale: string;
 	    state: string;
 	    installDir: string;
 	    userDataDir: string;
@@ -44,6 +45,7 @@ export namespace core {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.locale = source["locale"];
 	        this.state = source["state"];
 	        this.installDir = source["installDir"];
 	        this.userDataDir = source["userDataDir"];

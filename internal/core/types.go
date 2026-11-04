@@ -17,6 +17,7 @@ const (
 
 // CursorStatus holds comprehensive inspection information about Cursor.
 type CursorStatus struct {
+	Locale              string            `json:"locale"`
 	State               LocalizationState `json:"state"`
 	InstallDir          string            `json:"installDir"`
 	UserDataDir         string            `json:"userDataDir"`

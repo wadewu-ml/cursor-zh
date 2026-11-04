@@ -102,6 +102,7 @@ func readConfiguredLocale(installDir string) string {
 }
 
 func (in *Installer) setupLocale(installDir string) error {
+	locale := resourceLanguage(in.fsys).locale
 	path, err := cursorArgvPath(installDir)
 	if err != nil {
 		return err
@@ -130,11 +131,12 @@ func (in *Installer) setupLocale(installDir string) error {
 		count++
 	}
 	if start >= 0 {
-		data = append(append(append([]byte(nil), data[:start]...), []byte(`"zh-cn"`)...), data[end:]...)
+		encoded, _ := json.Marshal(locale)
+		data = append(append(append([]byte(nil), data[:start]...), encoded...), data[end:]...)
 	} else {
 		// Insert first so an existing trailing comma and trailing comments stay intact.
 		open := bytes.IndexByte(clean, '{') + 1
-		field := "\n  \"locale\": \"zh-cn\""
+		field := "\n  \"locale\": \"" + locale + "\""
 		if count > 0 {
 			field += ","
 		}

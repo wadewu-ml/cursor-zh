@@ -102,7 +102,8 @@
         if (!isMarketplaceEnglishDescription(original)) return;
         if (isTranslatedMarketplaceText(node.textContent || '')) return;
         if (onlineTranslationsThisPass >= 8) return;
-        var key = 'cursor-zh.marketplace.cache.' + original;
+        var locale = localizationLocale;
+        var key = 'cursor-zh.marketplace.cache.' + (locale === 'zh-cn' ? '' : locale + '.') + original;
         var cached = null;
         try { cached = localStorage.getItem(key); } catch (e) {}
         if (cached) {
@@ -115,7 +116,7 @@
         pendingOnlineTranslations.add(original);
         onlineTranslationsThisPass++;
 
-        var url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-CN&dt=t&q=' + encodeURIComponent(original);
+        var url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=' + (locale === 'zh-tw' ? 'zh-TW' : 'zh-CN') + '&dt=t&q=' + encodeURIComponent(original);
         fetch(url)
             .then(function(resp) { return resp.json(); })
             .then(function(data) {
