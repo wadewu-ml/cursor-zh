@@ -20,7 +20,7 @@
       input.checked = input.value === locale;
     }
     elLanguageSelect.setAttribute('aria-label', translate('汉化语言'));
-    document.documentElement.lang = locale === 'zh-tw' ? 'zh-TW' : 'zh-CN';
+    document.documentElement.lang = locale === 'zh-tw' ? 'zh-Hant' : 'zh-Hans';
     for (const label of staticLabels) {
       if (label.node.isConnected) label.node.textContent = translate(label.source);
     }

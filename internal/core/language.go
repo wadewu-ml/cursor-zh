@@ -9,6 +9,7 @@ import (
 	"strings"
 )
 
+// These locale IDs match Cursor's language packs, not public script labels.
 const (
 	SimplifiedChinese  = "zh-cn"
 	TraditionalChinese = "zh-tw"

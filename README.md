@@ -4,7 +4,7 @@
   <p>适用于 Windows 的 Cursor 中文汉化工具，支持简体中文与繁體中文，补充 Agent、Composer 与专属设置的中文翻译。</p>
 
   <p>
-    <b>简体中文</b> | <a href="./README_zh-TW.md">繁體中文</a> | <a href="./README_en.md">English</a>
+    <b>简体中文</b> | <a href="./README_zh-Hant.md">繁體中文</a> | <a href="./README_en.md">English</a>
   </p>
   <p><a href="https://github.com/wadewu-ml/cursor-zh/releases/latest">下载最新版</a></p>
 </div>

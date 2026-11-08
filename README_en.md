@@ -4,7 +4,7 @@
   <p>Simplified and Traditional Chinese localization for Cursor on Windows, covering Agent, Composer, and Cursor-specific settings.</p>
 
   <p>
-    <a href="./README.md">简体中文</a> | <a href="./README_zh-TW.md">繁體中文</a> | <b>English</b>
+    <a href="./README.md">简体中文</a> | <a href="./README_zh-Hant.md">繁體中文</a> | <b>English</b>
   </p>
   <p><a href="https://github.com/wadewu-ml/cursor-zh/releases/latest">Download the latest release</a></p>
 </div>
